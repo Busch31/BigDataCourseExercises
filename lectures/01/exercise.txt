@@ -1,0 +1,263 @@
+Exercise 1: Kubernetes Setup
+
+$env:KUBECONFIG="C:\SDU\Msc\1S\bigData\project\kubeconfig.yaml"
+
+kubectl get pods
+
+kubectl get service hello-kubernetes
+
+
+In this exercise, I set up my local environment to interact with a Kubernetes cluster using the kubectl command-line tool. The key steps included:
+
+Installing kubectl: Verified that kubectl is installed and running on my local machine.
+
+Configuring kubeconfig: Set up the KUBECONFIG environment variable to point to the provided kubeconfig file (C:\SDU\Msc\1S\bigData\project\kubeconfig.yaml). This file contains the necessary credentials and cluster information to authenticate and connect to the Kubernetes cluster.
+
+Connecting to the Kubernetes Cluster: Successfully connected to the Kubernetes cluster by verifying the status of the control plane and DNS services. I also confirmed that the cluster node leftover.tek.sdu.dk is in the Ready state, indicating that the cluster is operational.
+
+With the environment now properly configured, I am ready to proceed with deploying applications and working with Kubernetes in subsequent exercises.
+
+
+
+
+
+### **Exercise 2: Deploy "Hello World" Application**
+
+In this exercise, we deployed a "Hello World" application on a Kubernetes cluster. The deployment involved creating a `Deployment` and a `Service` using a YAML configuration file.
+
+1. **YAML Configuration:**
+   - We used a YAML file that defined two resources:
+     - **Deployment:** To create 3 replicas (pods) running the `hello-kubernetes` application.
+     - **Service:** To expose the application and route traffic to the pods using label selectors.
+
+2. **Applying the YAML Configuration:**
+   - We deployed the application using the following command:
+     ```
+     kubectl apply -f hello-kubernetes.yaml
+     ```
+
+3. **Verifying the Deployment:**
+   - We checked the status of the pods to ensure they were running correctly:
+     ```
+     kubectl get pods
+     ```
+   - We verified the service was created and identified the NodePort to access the application:
+     ```
+     kubectl get service hello-kubernetes
+     ```
+
+4. **Accessing the Application:**
+   - We accessed the application using the NodePort exposed by the service:
+     - First, determine the NodePort from the `kubectl get service` command output.
+     - Then, open a browser and navigate to `http://<NodeIP>:<NodePort>`.
+     - Example:
+       ```
+       kubectl get service hello-kubernetes
+       ```
+       If the output shows `8080:32242/TCP`, you would access the application at `http://<NodeIP>:32242`.
+
+5. **Clean-Up (Optional):**
+   - After completing the exercise, we cleaned up the resources using:
+     ```
+     kubectl delete -f hello-kubernetes.yaml
+     ```
+
+---
+
+This summary includes the key CLI commands you used to deploy, verify, access, and clean up the "Hello World" application in Kubernetes. Let me know if there’s anything else you need!
+
+
+
+### **Exercise 3: Connecting to the Application**
+
+In this exercise, we connected to the "Hello World" application running on Kubernetes using port forwarding. This allowed us to access the application locally on our machine.
+
+1. **Port Forwarding to the Service:**
+   - We used the `kubectl port-forward` command to forward a port on our local machine to the service running in Kubernetes:
+     ```
+     kubectl port-forward svc/hello-kubernetes 8080:8080
+     ```
+   - This command forwarded traffic from port 8080 on our localhost to port 8080 on the `hello-kubernetes` service.
+
+2. **Accessing the Application:**
+   - We accessed the application by opening a web browser and navigating to [http://localhost:8080](http://localhost:8080).
+   - The webpage displayed information about the pod that handled the request, including the pod name, namespace, and node.
+
+3. **Observing Load Balancing:**
+   - We refreshed the webpage multiple times to observe if different pods served the request. Each pod displayed its unique name, demonstrating Kubernetes' load-balancing behavior.
+
+### Important Commands Used:
+- **Port Forwarding:**
+  ```
+  kubectl port-forward svc/hello-kubernetes 8080:8080
+  ```
+
+- **Checking Pods:**
+  ```
+  kubectl get pods
+  ```
+
+- **Scaling the Deployment (Optional):**
+  ```
+  kubectl scale deployment hello-kubernetes --replicas=1
+  kubectl scale deployment hello-kubernetes --replicas=3
+  ```
+
+This exercise demonstrated how to connect to a Kubernetes service using port forwarding and how to observe the distribution of requests across multiple pods. Let me know if there's anything else you need!
+
+
+
+### **Exercise 4: Scaling the Application**
+
+In this exercise, we manually scaled the `hello-kubernetes` deployment to increase and decrease the number of pod replicas. This allowed us to adapt the application's capacity based on demand.
+
+1. **Scaling Up the Deployment:**
+   - We edited the deployment to increase the number of replicas from 3 to 5:
+     ```
+     kubectl edit deployment/hello-kubernetes
+     ```
+   - This command opened the deployment's YAML configuration, where we modified the `replicas` field and saved the changes.
+
+2. **Verifying the Number of Pods:**
+   - After scaling up, we checked that the number of pods increased to 5:
+     ```
+     kubectl get pods
+     ```
+
+3. **Accessing the Application:**
+   - We verified the application was still working correctly by using port forwarding:
+     ```
+     kubectl port-forward svc/hello-kubernetes 8080:8080
+     ```
+
+4. **Scaling Down the Deployment:**
+   - We then edited the deployment again to decrease the number of replicas back to 3:
+     ```
+     kubectl edit deployment/hello-kubernetes
+     ```
+
+5. **Verifying the Number of Pods:**
+   - We confirmed that the number of pods decreased to 3:
+     ```
+     kubectl get pods
+     ```
+
+6. **Accessing the Application Again:**
+   - Finally, we checked the application's functionality after scaling down using port forwarding:
+     ```
+     kubectl port-forward svc/hello-kubernetes 8080:8080
+     ```
+
+### Conclusion:
+
+This exercise demonstrated how to manually scale the number of replicas in a Kubernetes deployment and verified that the service automatically adjusted to route traffic to the correct number of pods without any disruption.
+
+
+
+
+### **Exercise 5: Deploy Application Using Helm**
+
+In this exercise, we used Helm, a package manager for Kubernetes, to deploy and manage the `hello-kubernetes` application. Helm simplifies application deployment by using charts, which are packages of pre-configured Kubernetes resources.
+
+1. **Cloning the Repository:**
+   - We cloned the `hello-kubernetes` repository from GitHub to access the Helm chart:
+     ```bash
+     git clone https://github.com/paulbouwer/hello-kubernetes.git
+     cd hello-kubernetes
+     ```
+
+2. **Installing the Helm Chart:**
+   - We installed the `hello-kubernetes` application using the Helm chart located in the repository:
+     ```bash
+     helm install hello-kubernetes-helm ./deploy/helm/hello-kubernetes
+     ```
+   - This command deployed the application and created the associated Kubernetes resources.
+
+3. **Checking the Helm Release Status:**
+   - We verified the installation by checking the status of the Helm release:
+     ```bash
+     helm status hello-kubernetes-helm
+     ```
+
+4. **Viewing Pods and Services:**
+   - We listed the running pods and services to see what was created by the Helm chart:
+     ```bash
+     kubectl get pods
+     kubectl get services
+     ```
+
+5. **Modifying the Helm Release:**
+   - We upgraded the Helm release to scale the application, increasing the replica count to 5:
+     ```bash
+     helm upgrade hello-kubernetes-helm ./deploy/helm/hello-kubernetes --set deployment.replicaCount=5
+     ```
+
+6. **Verifying the Scaling Operation:**
+   - After the upgrade, we confirmed that the number of pods had increased to 5 for the Helm-managed deployment:
+     ```bash
+     kubectl get pods
+     ```
+
+### Conclusion:
+
+This exercise demonstrated how to deploy an application using Helm, modify the deployment to scale the number of replicas, and verify that the changes were applied successfully. Helm simplifies the management of Kubernetes applications, making it easier to deploy, upgrade, and manage resources.
+
+
+
+
+
+### **Exercise 6: Interactive Container**
+
+In this exercise, we interacted with running containers within the Kubernetes cluster, similar to how you would interact with Docker containers. We also created and managed a temporary Ubuntu container.
+
+1. **Starting an Interactive Shell Inside a Pod:**
+   - We used the `kubectl exec` command to start an interactive shell session in one of the `hello-kubernetes` pods:
+     ```
+     kubectl exec --stdin --tty <pod-name> -- /bin/sh
+     ```
+   - Example:
+     ```
+     kubectl exec --stdin --tty hello-kubernetes-hello-kubernetes-helm-fbfbbb9bf-dfcvc -- /bin/sh
+     ```
+
+2. **Exploring the Pod:**
+   - Inside the shell, we used the `ls` command to list files and directories and `cat` to display the contents of `server.js`:
+     ```
+     ls
+     cat server.js
+     ```
+
+3. **Creating a Temporary Ubuntu Container:**
+   - We created a temporary Ubuntu container that would be deleted after exiting:
+     ```
+     kubectl run ubuntu --rm -i --tty --image ubuntu -- bash
+     ```
+
+4. **Installing `curl` and Testing Connectivity:**
+   - Inside the Ubuntu container, we installed `curl` and tested connectivity to the `hello-kubernetes` service:
+     ```
+     apt update && apt install curl -y
+     curl hello-kubernetes:8080
+     ```
+
+5. **Creating a Persistent Ubuntu Container:**
+   - We also created a persistent Ubuntu container that wouldn’t be deleted upon exit:
+     ```
+     kubectl run ubuntu -i --tty --image ubuntu -- bash
+     ```
+
+6. **Reattaching to a Running Container:**
+   - We could reattach to the running Ubuntu container using:
+     ```
+     kubectl attach ubuntu -c ubuntu -i -t
+     ```
+
+7. **Copying Files to the Container:**
+   - We copied a file from the local machine to the container using:
+     ```
+     kubectl cp exercises.md ubuntu:/exercises.md
+     ```
+
+### Conclusion:
+
+This exercise demonstrated how to interact with running containers in Kubernetes using `kubectl exec`, create temporary and persistent containers, and manage files within those containers.
